@@ -1,0 +1,186 @@
+<!DOCTYPE html> 
+<html> 
+	<head>
+	    <meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	    <title>Mazel SMS gateway - Reports</title>
+
+	    <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+        <script type="text/javascript" src="js/smsgateway.js"></script>
+        <script type="text/javascript" src="js/table.js"></script>
+
+        <link rel="stylesheet" href="css/smsgateway.css" />
+        <link rel="stylesheet" href="css/table.css" />
+	    
+        <script type="text/javascript">
+            var divMessageEl = null;
+
+            $(document).ready(function () {
+                if (expiredSession()) return;
+                
+                divMessageEl = document.getElementById("divMessage");
+                loadT1();
+            });
+
+            function loadScheduled() {
+                headerRptName.innerHTML = "Report - Scheduled Sms"
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "SMS_SCHEDULED"
+	            };
+	            callAjax(xmlData, loadScheduledR);
+	        }
+
+	        function loadScheduledR(data) {
+	            if (hasError(data)) return;
+	            //var headers = ['From', 'To', 'Message', 'Scheduled Time', ''];
+	            //var cols = ['f', 't', 'm', 'a', 'i'];
+	            //renderBoxTableCallback(data, "document", headers, cols, null, "800", "hor-minimalist-b", divReport, deleteMessageLink);
+                	            
+                var headers = ['From', 'To', 'Message', 'Scheduled Time'];
+                var cols = ['f', 't', 'm', 'a'];
+                renderBoxTable(data, "document", headers, cols, null, "800", "hor-minimalist-b", divReport);
+	        }
+
+	        function deleteMessageLink(index, value) {
+	            if (index != 4) return value;
+	            return "<a href=\"#\" onClick=\"deleteMessage(" + 
+                    value + ")\">Delete Message</a>";
+	        }
+
+
+	        function deleteMessage(msgId) {
+                xmlData = {
+	                service: "sql",
+	                action: "delete",
+	                queryid: "SMS_DELETE",
+	                paramsT: 1,
+                    params1:msgId
+	            };
+	            callAjax(xmlData, deleteMessageR);
+	        }
+
+	        function deleteMessageR(data) {
+	            if (hasError(data)) return;
+                loadScheduled();
+            }
+
+
+	        function loadT1() {
+	            headerRptName.innerHTML = "Report - Recent Sent Smses"
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "SMS_T1"
+	            };
+	            callAjax(xmlData, loadT1R);
+	        }
+
+	        function loadT1R(data) {
+	            if (hasError(data)) return;
+	            var headers = ['From', 'To', 'Message', 'Status',  'Sent', 'Delivered'];
+	            var cols = ['f', 't', 'm', 's', 'b', 'c'];
+	            renderBoxTableCallback(data, "document", headers, cols, null, "800", "hor-minimalist-b", divReport, expandStatus);
+	        }
+
+	        //DND_FAILED=0, GATEWAY_SCHEDULED=1, GATEWAY_FAILED=2, SMSC_QUEUED=3, SMSC_DELIVERED=4, SMSC_FAILED=5, PHONE_DELIVERED=6, PHONE_FAILED=7
+	        function expandStatus(index, value) {
+	            if (index != 3) return value;
+	            switch (value) {
+	                case '0':
+	                    return "Dnd Failed";
+	                    break;
+	                case '1':
+	                    return "gateway Scheduled";
+	                    break;
+	                case '2':
+	                    return "Gateway Failed";
+	                    break;
+	                case '3':
+	                    return "Operator Queued";
+	                    break;
+	                case '4':
+	                    return "Operator Delivered";
+	                    break;
+	                case '5':
+	                    return "Operator Failed";
+	                    break;
+	                case '6':
+	                    return "Phone Failed";
+	                    break;
+	                case '7':
+	                    return "Phone Delivered";
+	                    break;
+	                default:
+	                    return "Not Known - " + value;
+	            }
+	        }
+
+
+	        function loadPast() {
+	            headerRptName.innerHTML = "Report - Old Smses"
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "SMS_PAST"
+	            };
+	            callAjax(xmlData, loadPastR);
+	        }
+
+	        function loadPastR(data) {
+	            if (hasError(data)) return;
+	            var headers = ['Sent', 'Total Messages', 'Download'];
+	            var cols = ['sent_date', 'total_messages', 'file_location'];
+	            renderBoxTableCallback(data, "document", headers, cols, null, "800", "hor-minimalist-b", divReport, downloadLink);
+	        }
+
+	        function downloadLink(index, value) {
+	            if (index != 2) return value;
+	            return "<a href=\"" + value + "\">Download</a>";
+	        }
+	        
+
+        </script>
+     </head>
+    <body> 
+
+        <div class="header">
+            <img alt="Logo" class="logobutton" src="images/logo.png" 
+                onclick='document.location.href="myaccount.html";' />
+			
+            <div class="headerright">
+                <a href="userlogout.html" style="color:#ccccff;">Logout</a>
+                &nbsp;<span style="color:#ff0000;">|</span>&nbsp;
+			    <a href="userchangepassword.html" style="color:#ccccff;">Change Password</a>
+            </div>
+            <div class="highlighted" style="position:absolute;float:right;top:0px;left:100px;font-size:14px" id="divMessage"></div>
+
+            <div class="menu">
+		        <ul>
+			        <li><span><a href="myaccount.html">My Account</a></span></li>
+			        <li><span><a href="sendsms.html">Send SMS</a> </span></li>
+			        <li><span><a href="phonebook.html">Phone Book</a> </span></li>
+			        <li><span class="selected">Reports</span></li>
+			        <li><span><a href="contactus.html">Contact Us</a> </span></li>
+                </ul>
+            </div>
+        </div>
+        <br />
+        <div style="margin-left:24px;">
+            <h2>Choose Your Report</h2>
+            <table class="box-table-b" style="font-size:16px">
+                <tbody>
+    	            <tr>
+                        <td><a style="color:#0000ff" href="#" onclick="loadScheduled()">Scheduled Smses</a></td>
+        	            <td><a style="color:#0000ff" href="#" onclick="loadT1()">Last 24 Hours Processed SMSes</a></td>
+                        <td><a style="color:#0000ff" href="#" onclick="loadPast()">Download Old Reports</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <h2 id="headerRptName"></h2>
+            <div id="divReport" style="background-color:#fff; width:800px"></div><br />
+        </div>
+    </body>
+</html>

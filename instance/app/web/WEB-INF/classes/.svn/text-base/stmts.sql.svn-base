@@ -1,0 +1,360 @@
+--
+-- Create schema smsdb
+--
+
+CREATE DATABASE IF NOT EXISTS smsdb;
+USE smsdb;
+
+--
+-- Definition of table `account`
+--
+
+DROP TABLE IF EXISTS `account`;
+CREATE TABLE `account` (
+  `loginid` varchar(255) NOT NULL,
+  `reseller` varchar(255) NOT NULL,
+  `balance` float NOT NULL DEFAULT '0',
+  `sms_left` int(10) unsigned NOT NULL,
+  `mobile2many` bigint(20) unsigned NOT NULL,
+  `email2sms` varchar(64) NOT NULL,
+  `sender_name` varchar(64) DEFAULT NULL,
+  `api_access` tinyint(1) NOT NULL,
+  `excel_access` tinyint(1) NOT NULL,
+  `balance_expiry` datetime NOT NULL DEFAULT '2099-01-01 00:00:00',
+  `excel_expiry` datetime NOT NULL DEFAULT '2099-01-01 00:00:00',
+  `api_expiry` datetime NOT NULL DEFAULT '2099-01-01 00:00:00',
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`loginid`),
+  KEY `I_BALANCE` (`balance`),
+  KEY `I_RESELLER` (`reseller`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `account`
+--
+
+/*!40000 ALTER TABLE `account` DISABLE KEYS */;
+/*!40000 ALTER TABLE `account` ENABLE KEYS */;
+
+
+--
+-- Definition of table `app_config`
+--
+
+DROP TABLE IF EXISTS `app_config`;
+CREATE TABLE `app_config` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `configtype` char(1) NOT NULL,
+  `title` varchar(64) NOT NULL,
+  `body` mediumtext,
+  `status` char(1) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `BYTYPE` (`configtype`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `smsdb`.`draft`;
+CREATE TABLE  `smsdb`.`draft` (
+  `header` varchar(100) NOT NULL,
+  `body` varchar(255) NOT NULL,
+  `loginid` varchar(255) NOT NULL,
+  PRIMARY KEY (`header`,`loginid`),
+  KEY `LOGIN_I` (`loginid`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `app_config`
+--
+
+/*!40000 ALTER TABLE `app_config` DISABLE KEYS */;
+INSERT INTO `app_config` (`id`,`configtype`,`title`,`body`,`status`,`touchTime`) VALUES 
+ (1,'Q','ACCOUNT_DETAIL','select reseller, balance, sms_left as smsLeft, mobile2many, email2sms, sender_name as senderName, api_access as apiAccess, excel_access as excelAccess, balance_expiry as balanceExpiry, excel_expiry as excelExpiry, api_expiry as apiExpiry from account where loginid=__userid','A','2012-02-08 10:20:09'),
+ (2,'Q','PACKAGE_DETAIL','select id, reseller, total_sms as totalSms, a_sms_price as aSmsPrice, recharge_amount as rechargeAmount	 from package  where reseller = ?','A','2012-02-13 11:31:02'),
+ (3,'Q','PAYMENT_DETAIL','select id, loginid, orderno, amount, bank, txnno,status, date from payment  where loginid = __userid','A','2012-02-13 11:32:28'),
+ (4,'Q','RESELLERS','select id, reseller_name as resellerName from reseller','A','2012-02-13 11:33:34'),
+ (5,'Q','SENDER_NAMES','select  sender, status	 from sender  where loginid = __userid','A','2012-02-13 11:34:43'),
+ (6,'Q','MESSAGES_BY_STATUS','select i, l, r, f, t, m,s, a, b, c from s where l = __userid and s = ?','A','2012-02-13 11:42:18'),
+ (7,'Q','RECENT_SCHEDULED_MESSAGES','select i, l, r, f, t, m,s, a, b, c from s where l = __userid and s = ? and a >= ?','A','2012-02-13 11:40:51'),
+ (8,'Q','RECENT_SENT_MESSAGES','select i, l, r, f, t, m,s, a, b, c from s where l = __userid and s = ? and b=?','A','2012-02-13 11:48:05'),
+ (9,'Q','RECENT_DELIVERED_MESSAGES','select i, l, r, f, t, m,s, a, b, c from s where l = __userid and s = ? and c >= ?','A','2012-02-13 11:47:35'),
+ (10,'Q','PHONEBOOK_GROUPS','select group_id, group_name from phonebook_groups where loginid = __userid','A','2012-03-09 16:07:43'),
+ (11,'Q','PHONEBOOK_GROUPS_ADD','insert into phonebook_groups (loginid, group_name) values ( __userid, ?)','A','2012-03-09 16:17:08'),
+ (12,'Q','GROUP_MEMBERS','select member_id, member_name, mobile from groups_memebers where loginid = __userid and group_id=?','A','2012-03-09 18:26:40'),
+ (13,'Q','GROUP_MEMBERS_ADD','insert into groups_memebers (loginid,group_id, member_name, mobile) values ( __userid,?,?,?)','A','2012-03-09 19:13:32'),
+ (14,'Q','GROUP_MEMBERS_REMOVE','delete from groups_memebers where loginid = __userid and group_id = ? and member_id = ?','A','2012-03-09 19:29:57'),
+ (15,'Q','PHONEBOOK_GROUPS_DELETE','delete from phonebook_groups where loginid = __userid and group_id = ?','A','2012-03-09 19:46:06'),
+ (16,'Q','SMS_SCHEDULED','SELECT i,f,t,m,a FROM s where l=  __userid and a > CURRENT_TIMESTAMP;','A','2012-03-10 12:40:52'),
+ (17,'Q','SMS_T1','SELECT i,f,t,m,s,b,c FROM s where  l= __userid AND b  > (DATE_SUB(NOW(), INTERVAL 1 DAY));','A','2012-03-10 12:40:52'),
+ (18,'Q','SMS_PAST','SELECT sent_date, total_messages, file_location FROM s_older where loginid=__userid','A','2012-03-10 12:43:31'),
+ (19,'Q','SMS_DELETE','delete from s where l = __userid and i = ?','A','2012-03-10 15:38:24'),
+ (20,'Q','ACCOUNT_UPDATE_AUTH_MOBILE','update account set mobile2many = ? where loginid = __userid','A','2012-03-10 19:06:11'),
+ (21,'Q','ACCOUNT_UPDATE_AUTH_EMAIL','update account set email2sms = ? where loginid = __userid','A','2012-03-10 19:57:05'),
+ (22,'Q','SENDER_ADD','insert into sender (loginid, sender, status) values ( __userid, ? , ? )','A','2012-03-10 20:24:55'),
+ (23,'Q','SENDER_DELETE','delete from sender where loginid = __userid and sender = ?','A','2012-03-10 20:38:01'),
+ (24,'Q','DRAFTS','select header from draft where loginid = __userid','A','2012-03-10 20:38:01'),
+ (25,'Q','DRAFTS_DETAIL','select body from draft where loginid = __userid and header = ?','A','2012-03-10 20:38:01'),
+ (26, 'Q','MEMBER_SEARCH','SELECT group_id, member_name, mobile, member_id FROM groups_memebers where  loginid = __userid and member_name like ? ', 'A', '2012-04-08 17:04:03'),
+ (27, 'Q', 'GROUP_MEMBERS_UPDATE', 'update groups_memebers set member_name = ? , mobile = ? where group_id = ? and member_id = ? and loginid = __userid ', 'A', '2012-04-08 18:09:07');
+/*!40000 ALTER TABLE `app_config` ENABLE KEYS */;
+
+
+--
+-- Definition of table `failed_email`
+--
+
+DROP TABLE IF EXISTS `failed_email`;
+CREATE TABLE `failed_email` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mail_to` varchar(255) NOT NULL,
+  `mail_cc` varchar(255) DEFAULT NULL,
+  `msg_subject` varchar(255) DEFAULT NULL,
+  `msg_body` varchar(255) DEFAULT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `attachments` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `Index_2` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `failed_email`
+--
+
+/*!40000 ALTER TABLE `failed_email` DISABLE KEYS */;
+/*!40000 ALTER TABLE `failed_email` ENABLE KEYS */;
+
+
+--
+-- Definition of table `groups_memebers`
+--
+
+DROP TABLE IF EXISTS `groups_memebers`;
+CREATE TABLE `groups_memebers` (
+  `group_id` int(10) unsigned NOT NULL,
+  `member_name` varchar(255) NOT NULL,
+  `mobile` varchar(255) NOT NULL,
+  `member_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `loginid` varchar(255) NOT NULL,
+  PRIMARY KEY (`member_id`) USING BTREE,
+  UNIQUE KEY `MEMBER_EXISTS` (`group_id`,`member_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `groups_memebers`
+--
+
+/*!40000 ALTER TABLE `groups_memebers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `groups_memebers` ENABLE KEYS */;
+
+
+--
+-- Definition of table `package`
+--
+
+DROP TABLE IF EXISTS `package`;
+CREATE TABLE `package` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `reseller` varchar(255) NOT NULL,
+  `total_sms` int(10) unsigned NOT NULL,
+  `a_sms_price` decimal(10,3) NOT NULL,
+  `recharge_amount` decimal(10,3) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `RESELLER_I` (`reseller`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `package`
+--
+
+/*!40000 ALTER TABLE `package` DISABLE KEYS */;
+INSERT INTO `package` (`id`,`reseller`,`total_sms`,`a_sms_price`,`recharge_amount`,`touchTime`) VALUES 
+ (1,'mazel',400,'0.500','200.000','2012-02-13 20:22:06'),
+ (2,'mazel',1200,'0.250','300.000','2012-02-13 20:22:37'),
+ (3,'bizosys',400,'0.400','160.000','2012-02-13 20:22:37');
+/*!40000 ALTER TABLE `package` ENABLE KEYS */;
+
+
+--
+-- Definition of table `payment`
+--
+
+DROP TABLE IF EXISTS `payment`;
+CREATE TABLE `payment` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `loginid` varchar(255) NOT NULL,
+  `orderno` varchar(16) NOT NULL,
+  `amount` decimal(10,3) NOT NULL,
+  `bank` varchar(45) NOT NULL,
+  `txnno` varchar(64) NOT NULL,
+  `status` varchar(32) NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `LOGIN_I` (`loginid`),
+  KEY `I_DATE` (`date`),
+  KEY `I_STATUS` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `payment`
+--
+
+/*!40000 ALTER TABLE `payment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `payment` ENABLE KEYS */;
+
+
+--
+-- Definition of table `phonebook_groups`
+--
+
+DROP TABLE IF EXISTS `phonebook_groups`;
+CREATE TABLE `phonebook_groups` (
+  `loginid` varchar(255) NOT NULL,
+  `group_name` varchar(255) NOT NULL,
+  `group_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`group_id`),
+  UNIQUE KEY `Index_4` (`loginid`,`group_name`),
+  KEY `Index_2` (`loginid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `phonebook_groups`
+--
+
+/*!40000 ALTER TABLE `phonebook_groups` DISABLE KEYS */;
+/*!40000 ALTER TABLE `phonebook_groups` ENABLE KEYS */;
+
+
+--
+-- Definition of table `reseller`
+--
+
+DROP TABLE IF EXISTS `reseller`;
+CREATE TABLE `reseller` (
+  `id` varchar(255) NOT NULL,
+  `reseller_name` varchar(255) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `reseller`
+--
+
+/*!40000 ALTER TABLE `reseller` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reseller` ENABLE KEYS */;
+
+
+--
+-- Definition of table `s`
+--
+
+DROP TABLE IF EXISTS `s`;
+CREATE TABLE `s` (
+  `i` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Message Id',
+  `l` varchar(255) NOT NULL COMMENT 'Login Id',
+  `r` varchar(255) DEFAULT NULL COMMENT 'Reseller Id',
+  `f` varchar(32) NOT NULL COMMENT 'From',
+  `t` varchar(255) NOT NULL COMMENT 'To',
+  `m` varchar(255) NOT NULL COMMENT 'Message',
+  `s` char(1) NOT NULL COMMENT 'DND_FAILED=0, GATEWAY_SCHEDULED=1, GATEWAY_FAILED=2, SMSC_QUEUED=3, SMSC_DELIVERED=4, SMSC_FAILED=5, PHONE_DELIVERED=6, PHONE_FAILED=7',
+  `a` datetime DEFAULT NULL COMMENT 'Scheduled Time',
+  `b` datetime DEFAULT NULL COMMENT 'Sent Time',
+  `c` datetime DEFAULT NULL COMMENT 'Delivered/Failure Time',
+  PRIMARY KEY (`i`),
+  KEY `LOGIN_I` (`l`),
+  KEY `STATUS_I` (`s`),
+  KEY `SCHEDULE_I` (`a`),
+  KEY `DELIVERY_I` (`c`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `s`
+--
+
+/*!40000 ALTER TABLE `s` DISABLE KEYS */;
+/*!40000 ALTER TABLE `s` ENABLE KEYS */;
+
+
+--
+-- Definition of table `s_older`
+--
+
+DROP TABLE IF EXISTS `s_older`;
+CREATE TABLE `s_older` (
+  `loginid` varchar(255) NOT NULL,
+  `sent_date` datetime NOT NULL,
+  `total_messages` int(11) NOT NULL,
+  `file_location` varchar(255) DEFAULT NULL,
+  KEY `BY_LOGIN` (`loginid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `s_older`
+--
+
+/*!40000 ALTER TABLE `s_older` DISABLE KEYS */;
+INSERT INTO `s_older` (`loginid`,`sent_date`,`total_messages`,`file_location`) VALUES 
+ ('abhinashak@gmail.com','2012-03-10 00:00:00',3,'/Mazel/abhinashak/Jan/01052012.dat');
+/*!40000 ALTER TABLE `s_older` ENABLE KEYS */;
+
+
+--
+-- Definition of table `sender`
+--
+
+DROP TABLE IF EXISTS `sender`;
+CREATE TABLE `sender` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `loginid` varchar(255) NOT NULL,
+  `sender` varchar(255) NOT NULL,
+  `status` char(1) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `LOGIN_I` (`loginid`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `sender`
+--
+
+/*!40000 ALTER TABLE `sender` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sender` ENABLE KEYS */;
+
+
+--
+-- Definition of table `user_login`
+--
+
+DROP TABLE IF EXISTS `user_login`;
+CREATE TABLE `user_login` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `active` char(1) NOT NULL DEFAULT 'Y',
+  `loginid` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `profile` mediumtext NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_loginid` (`loginid`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `user_login`
+--
+
+/*!40000 ALTER TABLE `user_login` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_login` ENABLE KEYS */;
+
+
+
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,0 +1,75 @@
+<!DOCTYPE html> 
+<html> 
+	<head>
+	<script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+    <script type="text/javascript" src="js/smsgateway.js"></script>
+    <script type="text/javascript" src="js/table.js"></script>
+    <link rel="stylesheet" href="css/table.css" />
+    
+	<script type="text/javascript">
+
+
+        var divMessageEl  = null;
+
+        $(document).ready(function () {
+            divMessageEl = document.getElementById("divMessage");
+        });
+
+
+	    function queryProcess() {
+
+	        xmlData = {
+	            service: "sql",
+	            action: "select",
+	            queryid: "PACKAGE_DETAIL",
+	            paramsT: 1,
+                params1: "mazel"
+	        };
+            callAjax(xmlData, querySucess);
+
+	    }
+	    function querySucess(data) {
+	        
+            var headers = ['Sl', 'Message', 'Group', 'Scheduled Time'];
+            var cols = ['id', 'reseller', 'totalSms', 'rechargeAmount'];
+	        var leftFooter = "<a href=\"#\" style=\"color:#0000ff\">Previous</a>";
+	        var rightFooter = "<a href=\"#\" style=\"color:#0000ff\">Next</a>";
+
+	        renderBoxTable(data, "document", headers, cols, null, "800", "hor-minimalist-a", wordArea1);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "hor-minimalist-b", wordArea2);
+	        renderRoundTable(data, headers, leftFooter, rightFooter, "document", cols, "800", "rounded-corner", wordArea3);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "ver-minimalist", wordArea4);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "box-table-a", wordArea5);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "newspaper-a", wordArea8);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "newspaper-b", wordArea9);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "box-table-b", wordArea10);
+	        var colEmphasis = "<colgroup><col class=\"oce-first\" /></colgroup>";
+	        renderBoxTable(data, "document", headers, cols, colEmphasis, "800", "one-column-emphasis", wordArea7);
+	        renderBoxTable(data, "document", headers, cols, null, "800", "gradient-style", wordArea11);
+	        var zebEmphasis = "<colgroup><col class=\"vzebra-odd\" /><col class=\"vzebra-even\" /><col class=\"vzebra-odd\" /><col class=\"vzebra-even\" /></colgroup>";
+	        renderBoxTable(data, "document", headers, cols, zebEmphasis, "800", "ver-zebra", wordArea6);
+
+	    }
+
+
+    </script>    
+
+</head> 
+<body> 
+<input type=button onclick="queryProcess()" value="click"/>
+<div id="divMessage"></div>
+
+<div id="wordArea1" class="workArea" ></div></br>
+<div id="wordArea2" class="workArea" ></div></br>
+<div id="wordArea4" class="workArea" ></div></br>
+<div id="wordArea5" class="workArea" ></div></br>
+<div id="wordArea10" class="workArea" ></div></br>
+<div id="wordArea6" class="workArea"></div></br>
+<div id="wordArea7" class="workArea"></div></br>
+<div id="wordArea8" class="workArea" ></div></br>
+<div id="wordArea9" class="workArea" ></div></br>
+<div id="wordArea3" class="workArea" ></div></br>
+<div id="wordArea11" class="workArea"></div></br>
+
+</body>
+</html>

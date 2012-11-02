@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<project name="hsearch-teaser" basedir="../../">
+
+	<property name="currdir" value="${basedir}/instance/app/" />
+	<property file="${currdir}/build.properties" />
+	<property name="warfilename" value="${name}.war" />
+	<property name="test.junit.output.format" value="plain" />
+
+	<tstamp>
+		<format property="build.time" pattern="dd MMM yyyy hh:mm aa"/>
+	</tstamp>
+	
+	<!-- the normal classpath -->
+	<path id="classpath">
+		<pathelement location="${build.classes}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!-- plugins classpath -->
+	<dirname property="plugins.classpath.dir" file="${build.plugins}" />
+
+	<!-- ====================================================== -->
+	<!-- Stuff needed by all targets                            -->
+	<!-- ====================================================== -->
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.classes}" />
+
+		<mkdir dir="${build.web.dir}" />
+
+	</target>
+
+	<!-- ====================================================== -->
+	<!-- Compile the Java files                                 -->
+	<!-- TODO:: Add depends="init,generator" once the code generation is fixed -->
+	<!-- ====================================================== -->
+	<target name="compile" depends="compile-core, compile-plugins" />
+
+	<target name="compile-core" depends="init">
+	  	<echo message="Java home: ${java.home} - ${ant.java.version} : javac.version - ${javac.version}"/>
+	  	<echo message="Base Directory: ${basedir} "/>
+	  	<echo message="Source Directory: ${src.dir} "/>
+	  	
+		<javac encoding="${build.encoding}" 
+			destdir="${build.classes}" debug="${javac.debug}" optimize="${javac.optimize}" 
+			target="${javac.version}" source="${javac.version}" deprecation="${javac.deprecation}">
+			<classpath refid="classpath" />
+		    <src path="${src.dir}"/>
+		</javac>
+	</target>
+
+	<target name="compile-plugins">
+		<ant antfile="${currdir}/buildplugins.xml" target="deploy" inheritAll="false" />
+	</target>
+
+	<!-- ================================================================== -->
+	<!-- Make jar                                                     -->
+	<!-- ================================================================== -->
+	<!--                                                                    -->
+	<!-- ================================================================== -->
+	<target name="jar" depends="compile-core">
+		<jar jarfile="${build.dir}/${name}.jar" basedir="${build.classes}">
+		</jar>
+	</target>
+
+	<!-- ================================================================== -->
+	<!-- Make war                                                     -->
+	<!-- ================================================================== -->
+	<macrodef name="makewardef">
+		<attribute name="sitexml"/>
+		<attribute name="warfilename"/>
+		<attribute name="jarfilestoinclude"/>
+		<sequential>
+			<war destfile="${build.dir}/@{warfilename}" webxml="${currdir}/web/WEB-INF/web.xml">
+				
+				<fileset dir="${build.web.dir}" includes="**/*" />
+				<fileset dir="${currdir}/web" includes="**/*">
+					<excludesfile name="${currdir}/web/WEB-INF/web.xml" />
+					<exclude name="**/*/Thumbs.db"/>
+				</fileset>
+
+				<zipfileset dir="${src.dir}" includes="**/*.xml" prefix="/WEB-INF/classes/" />
+
+				<lib dir="${lib.dir}" >
+					<include name="@{jarfilestoinclude}"/>
+					<exclude name="rt.jar" />
+				</lib>
+
+				<lib dir="${build.dir}">
+					<include name="*.jar" />
+				</lib>
+
+				<classes dir="${build.dir}" includes="plugins/**">
+				</classes>
+				<manifest>
+					<attribute name="version" value="${version}"/>
+					<attribute name="company" value="${company}"/>
+					<attribute name="builton" value="${build.time}"/>
+				</manifest>
+			</war>
+		</sequential>
+	
+	</macrodef>
+
+
+	<!-- ================================================================== -->
+	<!-- D I S T R I B U T I O N  Targets                                   -->
+	<!-- ================================================================== -->
+	<target name="release" depends="clean.all, jar, compile-plugins">
+		<makewardef sitexml="site.xml" warfilename="${warfilename}" jarfilestoinclude="*.jar"/>
+	</target>
+	
+	<!-- ================================================================== -->
+	<!-- Clean.  Delete the build files, and their directories              -->
+	<!-- ================================================================== -->
+	<target name="clean.all">
+		<delete dir="${build.dir}" />
+		<delete dir="${HTTP_HOME}/${name}" />
+		<delete file="${HTTP_HOME}/${warfilename}" />
+	</target>
+
+</project>

@@ -1,0 +1,21 @@
+package com.bizosys.hsearch.teaser.filter;
+
+
+message TeaserVO {
+  
+
+  required string sid = 1;
+  optional string url = 2;
+  optional bytes title = 3;
+  optional bytes teaser = 4;
+  optional bytes preview = 5;
+}
+
+
+message FindTeaser {
+  
+
+  required int32 teaserLength = 1;
+  repeated bytes matchWords = 2;
+  repeated int32 hids = 3;
+}

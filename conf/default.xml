@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<configuration>
+
+	<property>
+	  <name>teaser.merge</name>
+	  <value>true</value>
+	  <description>
+	  	This merges all documents as of index merge factor
+	  	Do not change to false. We have some ongoing issues with single writes.
+	  	</description>
+	</property>	
+	
+	<property>
+	  <name>teaser.words.count</name>
+	  <value>100</value>
+	  <description>What is the size of the teaser.</description>
+	</property>	
+	
+	<property>
+	  <name>teaser.compression</name>
+	  <value>none</value>
+	  <description>Pick any one of 3 gz, lzo, none</description>
+	</property>
+
+	<property>
+	  <name>parallelization</name>
+	  <value>true</value>
+	  <description>Enable Parallelization for sequential access queries.</description>
+	</property>
+	
+	
+</configuration>	
+

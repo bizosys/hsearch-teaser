@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes
+END
+passwordreset.txt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/passwordreset.txt
+END
+site.xml
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/bizosys/!svn/ver/1814/smsgateway/instance/app/web/WEB-INF/classes/site.xml
+END
+bearbox.conf
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/bearbox.conf
+END
+jdbc.conf
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/jdbc.conf
+END
+stmts.sql
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/bizosys/!svn/ver/1850/smsgateway/instance/app/web/WEB-INF/classes/stmts.sql
+END
+license.key
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/license.key
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/log4j.properties
+END
+welcomemail.txt
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/bizosys/!svn/ver/1814/smsgateway/instance/app/web/WEB-INF/classes/welcomemail.txt
+END
+schema.sql
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/bizosys/!svn/ver/1790/smsgateway/instance/app/web/WEB-INF/classes/schema.sql
+END

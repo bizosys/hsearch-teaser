@@ -1,0 +1,50 @@
+group = core
+admin-port = 6000
+smsbox-port = 6001
+admin-password = f00bar
+status-password = sTat
+dlr-storage = mysql
+log-file = "kannel.log"
+log-level = 1
+access-log = "kannel.access"
+
+
+#--- mysql connection
+group = mysql-connection
+id = mydlr
+host = localhost
+username = ukannel
+password = pkannel
+database = kannel
+max-connections = 10
+
+#---- DLR table structure
+group = dlr-db
+id = mydlr
+table = dlr
+field-smsc = smsc
+field-timestamp = ts
+field-destination = destination
+field-source = source
+field-service = service
+field-url = url
+field-mask = mask
+field-status = status
+field-boxc-id = boxc
+
+#---- This is connection to smpp simulater
+group = smsc
+smsc = fake
+smsc-id = testsmsc
+port = 10000
+
+group = smsbox
+bearerbox-host = localhost
+sendsms-port = 7000
+global-sender = 7000
+
+group = sendsms-user
+username = mazel
+password = 12mazel98Z
+user-allow-ip = "127.0.0.1"
+default-smsc = testsmsc

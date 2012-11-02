@@ -1,0 +1,98 @@
+drop schema if exists `smsdb`;
+create schema `smsdb`;
+use smsdb;
+
+
+DROP TABLE IF EXISTS `reseller`;
+CREATE TABLE  `reseller` (
+  `id` varchar(255) NOT NULL,
+  `reseller_name` varchar(255) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `account`;
+CREATE TABLE  `account` (
+  `loginid` varchar(255) NOT NULL,
+  `reseller` varchar(255) NOT NULL,
+  `balance` decimal(10,3) NOT NULL DEFAULT '0.000',
+  `sms_left` bigint(20) unsigned NOT NULL,
+  `mobile2many` bigint(20) unsigned NOT NULL,
+  `email2sms` varchar(64) NOT NULL,
+  `sender_name` varchar(64) NOT NULL,
+  `api_access` tinyint(1) NOT NULL,
+  `excel_access` tinyint(1) NOT NULL,
+  `balance_expiry` datetime NOT NULL,
+  `excel_expiry` datetime NOT NULL,
+  `api_expiry` datetime NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`loginid`),
+  KEY `I_BALANCE` (`balance`),
+  KEY `I_RESELLER` (`reseller`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `package`;
+CREATE TABLE  `package` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `reseller` varchar(255) NOT NULL,
+  `total_sms` int(10) unsigned NOT NULL,
+  `a_sms_price` decimal(10,3) NOT NULL,
+  `recharge_amount` decimal(10,3) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `RESELLER_I` (`reseller`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `sender`;
+CREATE TABLE  `sender` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `loginid` varchar(255) NOT NULL,
+  `sender` varchar(255) NOT NULL,
+  `status` char(1) NOT NULL,
+  `touchTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `LOGIN_I` (`loginid`),
+  KEY `I_TOUCHTIME` (`touchTime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `payment`;
+CREATE TABLE  `payment` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `loginid` varchar(255) NOT NULL,
+  `orderno` varchar(16) NOT NULL,
+  `amount` decimal(10,3) NOT NULL,
+  `bank` varchar(45) NOT NULL,
+  `txnno` varchar(64) NOT NULL,
+  `status` varchar(32) NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `LOGIN_I` (`loginid`),
+  KEY `I_DATE` (`date`),
+  KEY `I_STATUS` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `s`;
+CREATE TABLE  `s` (
+  `i` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Message Id',
+  `l` varchar(255) NOT NULL COMMENT 'Login Id',
+  `r` varchar(255) DEFAULT NULL COMMENT 'Reseller Id',
+  `f` varchar(32) NOT NULL COMMENT 'From',
+  `t` varchar(255) NOT NULL COMMENT 'To',
+  `m` varchar(255) NOT NULL COMMENT 'Message',
+  `s` char(1) NOT NULL COMMENT 'Phone-Delivered(1), Phone-Failed(2), SMSC-Queued(3), SMSC-Delivered(4),  SMSC-Failed(5), Kannel-Scheduled(6), Kannel-Delivered(7),  Kannel-Failed(8)',
+  `a` datetime DEFAULT NULL COMMENT 'Scheduled Time',
+  `b` datetime DEFAULT NULL COMMENT 'Sent Time',
+  `c` datetime DEFAULT NULL COMMENT 'Delivered/Failure Time',
+  PRIMARY KEY (`i`),
+  KEY `LOGIN_I` (`l`),
+  KEY `STATUS_I` (`s`),
+  KEY `SCHEDULE_I` (`a`),
+  KEY `DELIVERY_I` (`c`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;

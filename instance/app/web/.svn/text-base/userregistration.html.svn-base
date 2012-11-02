@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html> 
+<html> 
+<head>
+    <title>New Account Registration</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+    <script type="text/javascript" src="js/smsgateway.js"></script>
+    <script type="text/javascript" src="js/validation.js"></script>
+    <link rel="stylesheet" href="css/smsgateway.css" />
+    <link rel="stylesheet" href="css/table.css" />
+    
+	<script type="text/javascript">
+
+
+        var urlQuery = null;
+        var captchPrompt = "Type above text here";
+        var loginPrompt = "Type your E-Mail here";
+        
+        var txtUserEl = null;
+        var txtPasswordEl = null;
+        var txtPassword2El = null;
+        var txtCaptchaEl = null;
+        var txtNameEl = null;
+        var txtMobileEl = null;
+        var txtAddressEl = null;
+        var divMessageEl  = null;
+
+        $(document).ready(function () {
+            divMessageEl = document.getElementById("divMessage");
+            txtUserEl = document.getElementById("txtUser");
+            txtPasswordEl = document.getElementById("txtPassword");
+            txtPassword2El = document.getElementById("txtPassword2");
+            txtCaptchaEl = document.getElementById("txtCaptcha");
+            txtNameEl = document.getElementById("txtName");
+            txtMobileEl = document.getElementById("txtMobile");
+            txtAddressEl = document.getElementById("txtAddress");
+            divMessageEl = document.getElementById("divMessage");
+
+            txtCaptchaEl.value = captchPrompt;
+            txtUserEl.value = loginPrompt;
+            txtPasswordEl.focus();
+        });
+        
+
+        function gotoAccountValidation() {
+            document.location.href = "uservalidation1.html";
+        }
+                
+        function keypress() {   
+            if (event.keyCode == 13) { 
+                registerRequest(); 
+                return false; 
+            }        
+        }
+        
+        function registerRequest() {
+            showMessage("");
+            window.scrollTo(0, 0);
+            
+            if ( txtUserEl.value == loginPrompt ||  txtUserEl.value.length == 0 ) {
+                showMessage("Enter User Id"); return;
+            } else if (!isEmail(txtUserEl.value, txtUserEl)) {
+                showPermanentMessage("User id should be an email");
+                return;
+            }
+
+            if (txtPasswordEl.value.length == 0) {
+                showMessage("Enter Password");
+                return;
+            } else if (!isAlphanumeric(txtPasswordEl.value, txtPasswordEl)) {
+                showPermanentMessage("Use Alphabets and Numbers for your password.");
+                return;
+            } else if (!lengthRestriction(txtPasswordEl.value, txtPasswordEl, 8, 120)) {
+                showPermanentMessage("Password should be minimum 8 characters.");
+                return;
+            }
+
+            if (! (txtPasswordEl.value == txtPassword2El.value) ) {
+                showPermanentMessage("Password reentry did not match"); 
+                txtPasswordEl.focus();
+                return;
+            }
+
+            if ( ! isName(txtNameEl.value, txtNameEl) ) {
+                showPermanentMessage("Enter Name"); return;
+            }
+            if ( ! isPhoneNumber(txtMobileEl.value, txtMobileEl) ) {
+                showPermanentMessage("Enter Mobile"); return;
+            }
+
+            if (txtAddressEl.value.length == 0) {
+                showMessage("Enter Address"); return;
+            }
+
+            if (txtCaptchaEl.value.length == 0 || txtCaptchaEl.value == captchPrompt) {
+                showMessage("Enter Captcha");
+                txtCaptchaEl.focus();
+                return;
+            } else {
+                if (!isAlphanumeric(txtCaptchaEl.value, txtCaptchaEl)) {
+                    showMessage("Improper Captcha."); return;
+                }
+            }
+            
+            var profileData = "Name:";
+            profileData = profileData + txtNameEl.value + "\r\nMobile:";
+            profileData = profileData + txtMobileEl.value + "\r\nAddress:";
+            profileData = profileData + txtAddressEl.value;
+            
+            xmlData = { 
+                service: "user", 
+                action : "register",
+                loginid: txtUserEl.value,
+                password: txtPasswordEl.value,
+                readcaptcha:txtCaptchaEl.value,
+                profile:profileData
+            };
+            
+            callAjax(xmlData, registerResponse);
+        }
+        
+        function registerResponse(data) {
+            if ( hasError(data) ) return false;
+            gotoAccountValidation();
+        }
+        
+    </script>    
+
+</head> 
+<body> 
+
+    <div class="header">
+        <img alt="Logo" class="logobutton" src="images/logo.png" />
+        <span class="mediumheader" style="color:#ffffff">Account Registration</span>
+    </div>                            
+    <br /><center><br />
+
+    <div class="highlighted" style="font-size:14px;" id="divMessage"></div>
+    <table class="tablespace" style="text-align:left;padding:6px 36px 36px 36px">
+        <tr>
+            <td colspan="2" style="text-align:left">
+                <h2>Login Information</h2>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left">User Id</td>
+            <td style="text-align:left">
+                <input id="txtUser" class="inputbox" type="text" name="txtUser" 
+                    onfocus='if ( this.value == loginPrompt) this.value="";'
+                    onblur='if ( this.value == "") this.value=loginPrompt;' />
+                    (E-Mail Id)   
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left; padding-right:20px">Password</td>
+            <td style="text-align:left">
+                <input class="inputbox" type="password" name="txtPassword" 
+                    id="txtPassword" value="" />
+            </td>
+        </tr>                
+        <tr>
+            <td style="text-align:left; padding-right:20px">Retype Password</td>
+            <td style="text-align:left">
+                <input class="inputbox" type="password" name="txtPassword2" 
+                    id="txtPassword2" value="" />
+            </td>
+        </tr>                
+        <tr>
+            <td colspan="2" style="text-align:left">
+                <h2>Contact Information</h2>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left">Name</td>
+            <td style="text-align:left">
+                <input class="inputbox" type="text" name="txtName" 
+                    id="txtName" value="" />
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left">Mobile Number</td>
+            <td style="text-align:left">
+                <input class="inputbox" type="text" name="txtMobile" 
+                    id="txtMobile" value="" />
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align:left">Address</td>
+            <td style="text-align:left">
+                <textarea class="inputbox" style="height:100px" name="txtAddress" id="txtAddress"></textarea>
+                        
+            </td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td style="text-align:left">
+                <br />
+                <img id="imgCaptcha" style="width:200px" src="captcha.jpeg" 
+                    alt="Enable Image to See Captcha" />
+                <br />
+                <input class="inputbox" style="width:194px" type="text" name="txtCaptcha" 
+                    onfocus='if ( this.value == captchPrompt) this.value="";'
+                    onblur='if ( this.value == "") this.value=captchPrompt;'
+                    id="txtCaptcha" onkeypress="keypress();" />
+                <br /><br />
+                <input type=checkbox checked=checked value="Agree With the License" />
+                <a href="javascript: void(0)" 
+                onclick="window.open('license.html', 'license'); return false;">
+                Read The License.</a> 
+            </td>
+        </tr>                
+        <tr>
+            <td colspan="2" style="text-align:center">
+                <hr />
+                <input type=button name="btnLogin" class="btnBlue" onclick="registerRequest();" value="Register Now" />
+                        
+            </td>
+        </tr>
+
+    </table>
+            
+    <br /></center>
+</body>
+</html>

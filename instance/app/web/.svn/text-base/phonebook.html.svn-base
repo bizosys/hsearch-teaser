@@ -1,0 +1,331 @@
+<!DOCTYPE html> 
+<html> 
+	<head>
+	    <meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	    <title>Mazel SMS gateway - Phone Book</title>
+
+	    <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+        <script type="text/javascript" src="js/smsgateway.js"></script>
+        <script type="text/javascript" src="js/table.js"></script>
+        <script type="text/javascript" src="js/validation.js"></script>
+
+        <link rel="stylesheet" href="css/smsgateway.css" />
+        <link rel="stylesheet" href="css/table.css" />
+	    
+        <script type="text/javascript">
+            var divMessageEl = null;
+            var txtGroupNameEl = null;
+            var divGroupDetailsEl = null;
+            var divSearchEl = null;
+
+            $(document).ready(function () {
+                if ( expiredSession() ) return;                
+
+                divMessageEl = document.getElementById("divMessage");
+                txtGroupNameEl = document.getElementById("txtGroupName");
+                divGroupDetailsEl = document.getElementById("divGroupDetails");
+                divSearchEl = document.getElementById("divSearch");
+                loadGroupsData();
+            });
+
+            function searchMember() {
+                var elem = document.getElementById("txtSearch");
+                var query = elem.value;
+                if ( ! isAlphabet(query, elem) ) {
+                    showPermanentMessage("Invalid Query.");
+                    return;
+                }
+                query = "%" + query + "%";
+
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "MEMBER_SEARCH",
+                    paramsT:1,
+                    params1: query
+	            };
+	            callAjax(xmlData, searchMemberR);                
+            }
+
+            function searchMemberR(data) {
+                if (hasError(data)) return;
+
+	            var xml = $.parseXML(data);
+                var headers = ['Member Name', 'Member Mobile'];
+                var cols = ['member_name', 'mobile'];
+                var leftFooter = "";
+                var rightFooter = "";
+
+                var found = 0;
+                found = renderRoundTable(data, headers, leftFooter,
+                   rightFooter, "document", cols, -1, "rounded-corner", divSearchEl);
+
+                var headerMsg = (found == 0) ? "<h2>There are no members.</h2>" :
+                    "<h2>Total " + found + " members found.</h2>"
+
+                divSearchEl.innerHTML = headerMsg + divSearchEl.innerHTML;
+
+            }
+
+	        function loadGroupsData() {
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "PHONEBOOK_GROUPS"
+	            };
+	            callAjax(xmlData, loadGroupsDataR);
+	        }
+
+	        function loadGroupsDataR(data) {
+	            if (hasError(data)) return;
+	            data = data.replace(/<group_id>/g, "<o><![CDATA[<a href=\"#\" onClick=\"openGroup(");
+	            data = data.replace(/<\/group_id>/g, ")\">Show Members</a>]]></o>");
+	            var headers = ['Group Name', 'Members'];
+	            var cols = ['group_name', 'o'];
+	            renderBoxTable(data, "document", headers, cols, null, "490", "ver-minimalist", divGroupListing);
+	        }
+
+	        function addGroupsData() {
+	            
+                if (! isAlphanumeric(txtGroupNameEl.value, txtGroupNameEl)) {
+                    showPermanentMessage("Improper Group name. A group name consists of alphabets and numbers.");
+                    return;
+                }
+                
+                xmlData = {
+	                service: "sql",
+	                action: "insert",
+	                queryid: "PHONEBOOK_GROUPS_ADD",
+	                paramsT: 1,
+	                params1: txtGroupNameEl.value
+	            };
+	            callAjax(xmlData, addGroupsDataR);
+	        }
+
+	        function addGroupsDataR(data) {
+	            if (hasError(data)) return;
+	            showMessage("The group is sucessfully added.");
+                loadGroupsData();
+	        }
+
+	        function openGroup(groupNo) {
+	            xmlData = {
+	                service: "sql",
+	                action: "select",
+	                queryid: "GROUP_MEMBERS",
+	                paramsT: 1,
+	                params1: groupNo
+	            };
+	            callAjax(xmlData, openGroupR);
+	        }
+
+	        function openGroupR(data) {
+	            var groupId = xmlData.params1;
+
+	            if (hasError(data)) return;
+
+	            var xml = $.parseXML(data);
+                var deleteGroupHtml = "<a style=\"color:#0000ff\" href=\"#\" onClick=\"deleteGroup(" + groupId + ")\">Delete Group</a>";
+                var headers = ['Member Name', 'Member Mobile', deleteGroupHtml];
+                var cols = ['member_name', 'mobile', 'member_id'];
+                var leftFooter = "<input class=\"inputbox\" id=\"txtMemberName\" style=\"color:#000;width:200px\" /><input class=\"inputbox\" id=\"txtMemberMobile\" style=\"color:#000;width:100px\" />";
+                var rightFooter = "<input type=button class=\"btnBlue\" value=\"Add Member\" onclick=\"addMember('" + groupId + "');\" />";
+
+                var found = 0;
+                found = renderRoundTableCallback(data, headers, leftFooter,
+                   rightFooter, "document", cols, -1, "rounded-corner", divGroupDetailsEl, openGroupCallback);
+
+                var headerMsg = (found == 0) ? "<h2>There are no members.</h2>" :
+                    "<h2>There are total " + found + " members.</h2>"
+
+                divGroupDetailsEl.innerHTML = headerMsg + divGroupDetailsEl.innerHTML;
+            }
+
+            function openGroupCallback(col, colText) {
+                if ( col != 2 ) return colText;
+
+                var colVal = "<a href=\"#\" onClick=\"deleteMember(" + 
+                    xmlData.params1 + "," + colText + ")\">Delete</a> , " + 
+                    "<a href=\"#\" onClick='updateMember(" + 
+                    xmlData.params1 + "," + colText + ", \"Abinash\",\"9980662148\")'>Update</a>";
+
+                return colVal;
+            }
+
+            function addMember(groupNo) {
+                var elem = document.getElementById("txtMemberName");
+                var memberName = elem.value;
+
+                if ( ! isName(memberName, elem) ) {
+                    showPermanentMessage("Invalid member name.");
+                    return;
+                }
+
+                elem = document.getElementById("txtMemberMobile");
+                var mobileNo = elem.value;
+                if ( ! isPhoneNumber(mobileNo, elem) ) {
+                    showPermanentMessage("Invalid phone number.");
+                    return;
+                }
+
+
+                xmlData = {
+                    service: "sql",
+                    action: "insert",
+                    queryid: "GROUP_MEMBERS_ADD",
+                    paramsT: 3,
+                    params1: groupNo,
+                    params2: memberName,
+                    params3: mobileNo
+                };
+                callAjax(xmlData, addMemberR);
+            }
+
+            function addMemberR(data) {
+                if (hasError(data)) return;
+                openGroup(xmlData.params1);
+            }
+
+            function updateMember(groupNo, memberNo, memberName, mobileNo) {
+                memberName = prompt ("Modify Name", memberName);
+
+                var elem = document.getElementById("divGroupDetails");
+                if ( ! isName(memberName, elem) ) {
+                    showPermanentMessage("Invalid member name.");
+                    return;
+                }
+
+                mobileNo = prompt ("Modify Mobile", mobileNo);
+                if ( ! isPhoneNumber(mobileNo, elem) ) {
+                    showPermanentMessage("Invalid phone number.");
+                    return;
+                }
+
+                xmlData = {
+                    service: "sql",
+                    action: "update",
+                    queryid: "GROUP_MEMBERS_UPDATE",
+                    paramsT: 4,
+                    params1: memberName,
+                    params2: mobileNo,
+                    params3: groupNo,
+                    params4: memberNo
+                };
+                callAjax(xmlData, updateMemberR);
+            }            
+
+            function updateMemberR(data) {
+                if (hasError(data)) return;
+                openGroup(xmlData.params3);
+            }
+
+
+            function deleteMember(groupNo, memberId) {
+                xmlData = {
+                    service: "sql",
+                    action: "delete",
+                    queryid: "GROUP_MEMBERS_REMOVE",
+                    paramsT: 2,
+                    params1: groupNo,
+                    params2: memberId,
+                };
+                callAjax(xmlData, deleteMemberR);
+            }
+
+            function deleteMemberR(data) {
+                if (hasError(data)) return;
+                openGroup(xmlData.params1);
+            }
+
+            function deleteGroup(groupNo) {
+                var confirmation = confirm("Removing a group will result in deleting all it's members. Do you want to continue?");
+                if ( !confirmation ) return;
+                xmlData = {
+                    service: "sql",
+                    action: "delete",
+                    queryid: "PHONEBOOK_GROUPS_DELETE",
+                    paramsT: 1,
+                    params1: groupNo
+                };
+                callAjax(xmlData, deleteGroupR);
+            }
+
+            function deleteGroupR(data) {
+                if (hasError(data)) return;
+                divGroupDetailsEl.innerHTML = "";
+                loadGroupsData();
+            }
+            
+
+
+        </script>
+               
+    </head> 
+
+    <body> 
+
+        <div class="header">
+            <img alt="Logo" class="logobutton" src="images/logo.png" 
+                onclick='document.location.href="myaccount.html";' />
+			
+            <div class="headerright">
+                <a href="userlogout.html" style="color:#ccccff;">Logout</a>
+                &nbsp;<span style="color:#ff0000;">|</span>&nbsp;
+			    <a href="userchangepassword.html" style="color:#ccccff;">Change Password</a>
+            </div>
+
+            <div class="menu">
+		        <ul>
+			        <li><span><a href="myaccount.html">My Account</a></span></li>
+			        <li><span><a href="sendsms.html">Send SMS</a> </span></li>
+			        <li><span class="selected">Phone Book</span></li>
+			        <li><span><a href="reports.html">Reports</a> </span></li>
+			        <li><span><a href="contactus.html">Contact Us</a> </span></li>
+                </ul>
+            </div>
+        </div>
+        <br />
+        <center><div class="highlighted" style="font-size:14px" id="divMessage"></div></center>
+
+        <br />
+        <div style="margin-left:20px">
+            <h2>Find A Member</h2>
+            <input class="inputbox" id="txtSearch" style="color:#000" />
+            <input type=button class="btnBlue" value="Search" onclick="searchMember();" />
+            <div id="divSearch"></div>
+        </div>
+
+        <br />
+        <h2 style="margin-left:20px">Phone Groups</h2>
+        <table style="margin-left:12px">
+            <tr>
+                <td style="vertical-align:top; font-size:14px">
+                    <table class="one-column-emphasis" width="490px">
+                        <colgroup>
+    	                    <col class="oce-first" />
+                        </colgroup>
+                            
+                        <tbody>
+                        <tr>
+                            <th>
+                                <input class="inputbox" id="txtGroupName" style="color:#000" />
+                                <input type=button class="btnBlue" value="Add New Group" 
+                                    onclick="addGroupsData();" />
+                            </th>
+                        </tr>
+                    </table>
+                    <div style="background-color:#ffffff;padding-bottom:24px" id="divGroupListing"></div>
+                </td>
+                <td style="width:48px">
+                </td>
+                <td style="vertical-align:top;width:460px">
+                    <div style="color:#fff;padding-bottom:12px;" id="divGroupDetails">
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        
+    </body>
+</html>

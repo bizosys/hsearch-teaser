@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html> 
+<html> 
+	<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Account Verification</title>
+
+    <link rel="stylesheet" href="css/smsgateway.css" />
+    <link rel="stylesheet" href="css/table.css" />
+
+</head> 
+<body> 
+
+    <div class="header">
+        <img alt="Logo" class="logobutton" src="images/logo.png" />
+        <span class="mediumheader" style="color:#ffffff">Mazel Technologies Ltd</span>
+    </div>                            
+
+    <br /><center><br />
+    <div class="tablespace" style="text-align:left;padding:6px 36px 36px 36px;width:400px">
+        <h2>Check your verification EMail</h2>
+        <span style="font-size:18px; font-weight:normal">
+            An verification EMail is sent to your mail address. <br />
+            Check your mailbox and follow the activation link. <br /><br />
+            Please look for <u>Junk folder</u> also as this is a auto generated mail.
+        </span>
+    </div>
+    </center>
+	                
+
+</body>
+</html>
