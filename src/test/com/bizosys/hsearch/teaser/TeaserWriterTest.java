@@ -12,7 +12,7 @@ import com.oneline.ferrari.TestAll;
 
 public class TeaserWriterTest extends TestCase {
 	public static String[] modes = new String[] { "all", "random", "method"};
-	public static String mode = modes[2];  
+	public static String mode = modes[1];  
 	
 	public static void main(String[] args) throws Exception {
 		TeaserWriterTest t = new TeaserWriterTest();
@@ -24,7 +24,7 @@ public class TeaserWriterTest extends TestCase {
 	        
 		} else if  ( modes[2].equals(mode) ) {
 			t.setUp();
-			t.testLastLWordsCaps();
+			t.testRandomHindiwords();
 			t.tearDown();
 		}
 	}
@@ -308,7 +308,7 @@ public class TeaserWriterTest extends TestCase {
 	
 	public void testEndOfWords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " Las Vegas is a sin!#^& City asd asd asd sad asd asdsaasd asda ssdsa";
+		String inputString = "Las Vegas is a sin!#^& City asd asd asd sad asd asdsaasd asda ssdsa";
 		testAddDocument(bucketId, 11, "s11", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -328,7 +328,7 @@ public class TeaserWriterTest extends TestCase {
 	
 	public void testCapsWords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " Las Vegas is a sin!#^& City asd asd HELLO asd sad asd asdsaasd asda ssdsa ";
+		String inputString = "Las Vegas is a sin!#^& City asd asd HELLO asd sad asd asdsaasd asda ssdsa";
 		testAddDocument(bucketId, 12, "s12", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -348,7 +348,7 @@ public class TeaserWriterTest extends TestCase {
 	
 	public void testSmallWords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " Las Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa ";
+		String inputString = "Las Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa";
 		testAddDocument(bucketId, 13, "s13", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -368,7 +368,7 @@ public class TeaserWriterTest extends TestCase {
 	
 	public void testsmallFWords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " lAS Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa ";
+		String inputString = "lAS Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa";
 		testAddDocument(bucketId, 14, "s14", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -388,7 +388,7 @@ public class TeaserWriterTest extends TestCase {
 	
 		public void testFirstWordsLastCaps() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " laS Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa ";
+		String inputString = "laS Vegas is a sin!#^& City asd hello asd asd sad asd asdsaasd asda ssdsa";
 		testAddDocument(bucketId, 16, "s16", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -427,16 +427,16 @@ public class TeaserWriterTest extends TestCase {
 
 		System.out.println("aTeaser : [" + aTeaser + "]");
 		System.out.println("inputString : [" + inputString + "]");
-		assertEquals("  asd hello  asd asd sad asd asdsaasd asda ssdsa", aTeaser);
+		assertEquals("asd hello  asd asd sad asd asdsaasd asda ssdsa", aTeaser);
 		}
 
 	
 	public void testFirstHindiwords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA ";
+		String inputString = "तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA";
 		
 		testAddDocument(bucketId, 30, "s19", "http://www.one.com", 
-				"This is test end of word..", "the" + inputString + "ASD", "No Preview...");
+				"This is test end of word..", "the " + inputString + "ASD", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
 		matchingWords.add("तुम्हारा");		
 		List<Integer> hids = new ArrayList<Integer>();
@@ -453,13 +453,13 @@ public class TeaserWriterTest extends TestCase {
 		System.out.println("Found Teaser : " + aTeaser);
 		System.out.println("aTeaser : [" + aTeaser + "]");
 		System.out.println("inputString : [" + inputString + "]");
-		assertEquals(" तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello ", aTeaser);
+		assertEquals("तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello", aTeaser);
 		}
 	
 	
 	public void testLastHindiwords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA ";
+		String inputString = "तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA";
 		testAddDocument(bucketId, 25 , "s20", "http://www.one.com", 
 				"This is test end of word..", "The" + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -476,12 +476,12 @@ public class TeaserWriterTest extends TestCase {
 		}
 		System.out.println("aTeaser : [" + aTeaser + "]");
 		System.out.println("inputString : [" + inputString + "]");
-		assertEquals(" तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello ", aTeaser);
+		assertEquals("नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd", aTeaser);
 	}
 	
 	public void testRandomHindiwords() throws Exception {
 		Long bucketId = 16L;
-		String inputString = " तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA ";
+		String inputString = "तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello  asd asd sad asd asdsaasd asda ssdsA";
 		testAddDocument(bucketId, 40 , "s21", "http://www.one.com", 
 				"This is test end of word..", "." + inputString + " asd ", "No Preview...");
 		List<String> matchingWords = new ArrayList<String>();
@@ -498,7 +498,7 @@ public class TeaserWriterTest extends TestCase {
 		}
 		System.out.println("aTeaser : [" + aTeaser + "]");
 		System.out.println("inputString : [" + inputString + "]");
-		assertEquals(" तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello ", aTeaser);
+		assertEquals("तुम्हारा नाम क्या है ? Las Vegas is a sin!#^& City.  asd hello", aTeaser);
 	}
 	
 }

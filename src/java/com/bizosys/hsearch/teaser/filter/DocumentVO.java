@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.bizosys.hsearch.byteutils.ISortedByte;
 import com.bizosys.hsearch.byteutils.SortedBytesArray;
 import com.bizosys.hsearch.byteutils.SortedBytesInteger;
+import com.bizosys.hsearch.treetable.CellBase;
 import com.google.protobuf.ByteString;
 
 public class DocumentVO implements Comparator<DocumentVO>{
@@ -98,7 +100,6 @@ public class DocumentVO implements Comparator<DocumentVO>{
 	
 	public static byte[] toBytes(List<DocumentVO> teasersL) throws IOException {
 		
-		List<byte[]> _keyB_valueB_tmp = new ArrayList<byte[]>();
 		List<Integer> keys = new ArrayList<Integer>(teasersL.size());
 		List<byte[]> values = new ArrayList<byte[]>(teasersL.size());
 		
@@ -106,11 +107,11 @@ public class DocumentVO implements Comparator<DocumentVO>{
 			keys.add(docVO.hid);
 			values.add(toBytes(docVO).toByteArray() );
 		}
-		
-		_keyB_valueB_tmp.add(SortedBytesInteger.getInstance().toBytes(keys, false));
-		_keyB_valueB_tmp.add(SortedBytesArray.getInstance().toBytes(values, false));
-		
-		return SortedBytesArray.getInstance().toBytes(_keyB_valueB_tmp, true);
+		byte[] cellB = CellBase.serializeKV(SortedBytesInteger.getInstance().toBytes(keys),
+				SortedBytesArray.getInstance().toBytes(values));
+		keys.clear();
+		values.clear();
+		return cellB;
 	}
 	
 	public static ByteString toBytes(DocumentVO teaserVO) {
@@ -125,14 +126,19 @@ public class DocumentVO implements Comparator<DocumentVO>{
 
 	public static List<DocumentVO> fromBytes(byte[] inputData) throws IOException {
 		
-		byte[] keyB = SortedBytesArray.getInstance().getValueAt(inputData, 0);
-		byte[] valuesB = SortedBytesArray.getInstance().getValueAt(inputData, 1);
+		ISortedByte<byte[]> input = SortedBytesArray.getInstance().parse(inputData);
+		byte[] keyB = input.getValueAt( 0);
+		byte[] valuesB = input.getValueAt(1);
 		
 		List<DocumentVO> allDocs = new ArrayList<DocumentVO>();
 		int total = ( null == keyB ) ? 0 : keyB.length / 4;
+		
+		ISortedByte<Integer> keyParser = SortedBytesInteger.getInstance();
+		ISortedByte<byte[]> valParser = SortedBytesArray.getInstance();
 		for (int index=0; index<total; index++) {
-			int aKey = SortedBytesInteger.getInstance().getValueAt(keyB, index);
-			byte[] aTeaserBytes = SortedBytesArray.getInstance().getValueAt(valuesB, index);
+			int aKey = keyParser.parse(keyB).getValueAt(index);
+			byte[] aTeaserBytes = valParser.parse(valuesB).getValueAt(index);
+			
 			TeaserByteUtils.TeaserVO parsedTeasers = TeaserByteUtils.TeaserVO.parseFrom(aTeaserBytes);
 			if ( null == parsedTeasers) continue;
 			allDocs.add(new DocumentVO(aKey, parsedTeasers) );
@@ -142,15 +148,19 @@ public class DocumentVO implements Comparator<DocumentVO>{
 		
 	public static List<DocumentVO> fromBytesFind(byte[] inputData, List<Integer> findHids) throws Exception {
 		
-		byte[] keyB = SortedBytesArray.getInstance().getValueAt(inputData, 0);
-		byte[] valuesB = SortedBytesArray.getInstance().getValueAt(inputData, 1);
+		ISortedByte<byte[]> input = SortedBytesArray.getInstance().parse(inputData);
+		
+		byte[] keyB = input.getValueAt(0);
+		byte[] valuesB = input.getValueAt(1);
 		
 		List<DocumentVO> foundTeasers = new ArrayList<DocumentVO>(findHids.size());
 		
+		ISortedByte<Integer> keyParser = SortedBytesInteger.getInstance();
+		ISortedByte<byte[]> valParser = SortedBytesArray.getInstance();
 		for (Integer aHid : findHids) {
-			int foundAt = SortedBytesInteger.getInstance().getEqualToIndex(keyB, aHid.intValue());
+			int foundAt = keyParser.parse(keyB).getEqualToIndex(aHid.intValue());
 			if ( -1 == foundAt ) continue;
-			byte[] aTeaserBytes = SortedBytesArray.getInstance().getValueAt(valuesB, foundAt);
+			byte[] aTeaserBytes = valParser.parse(valuesB).getValueAt(foundAt);
 			TeaserByteUtils.TeaserVO parsedTeasers = TeaserByteUtils.TeaserVO.parseFrom(aTeaserBytes);
 			if ( null == parsedTeasers) continue;
 			foundTeasers.add(new DocumentVO(aHid, parsedTeasers) );

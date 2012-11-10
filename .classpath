@@ -12,7 +12,7 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/protobuf-java-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/hsearch-core.jar"/>
 	<classpathentry kind="lib" path="lib/1line-ferrari.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/hsearch-core"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
